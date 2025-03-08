@@ -1,8 +1,8 @@
 package com.jazim.pixelnews.data.repository
 
-import com.jazim.pixelnews.data.models.Coin
 import com.jazim.pixelnews.data.networking.ApiService
 import com.jazim.pixelnews.data.toDomainModel
+import com.jazim.pixelnews.domain.model.Coin
 import com.jazim.pixelnews.domain.model.ShortCoin
 import com.jazim.pixelnews.domain.repository.CoinRepository
 import javax.inject.Inject
@@ -35,7 +35,7 @@ class CoinRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 val apiResponse = response.body()
                 if (apiResponse != null) {
-                    Result.success(apiResponse)
+                    Result.success(apiResponse.toDomainModel())
                 } else {
                     Result.failure(Throwable("Response body is null"))
                 }
@@ -44,7 +44,6 @@ class CoinRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Result.failure(e)
-        }    }
-
-
+        }
+    }
 }

@@ -3,6 +3,7 @@ package com.jazim.pixelnews.presentation.coins
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,6 +15,10 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,23 +30,30 @@ import com.jazim.pixelnews.presentation.CoinViewModel
 fun CoinsScreen(
     coinViewModel: CoinViewModel
 ) {
-    val coinState = coinViewModel.coinState.value
+    val allCoinsState = coinViewModel.allCoinsState.value
+    var selectedCoinId by remember { mutableStateOf<String?>(null) }
 
     Box(Modifier.fillMaxSize().testTag("MainScreen"), contentAlignment = Alignment.Center) {
         when {
-            coinState.loading -> CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
+            allCoinsState.loading -> CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
 
-
-            coinState.error != null -> {
-                Text(modifier = Modifier.width(300.dp), text = coinState.error.toString())
+            allCoinsState.error != null -> {
+                Text(modifier = Modifier.width(300.dp), text = allCoinsState.error.toString())
             }
 
             else -> {
-                val sortedCoinNames = coinState.coinNames.sorted()
-                println("size is ${coinState.coinNames.size}")
+                val sortedCoinNames = allCoinsState.coins.map { it.name }.sorted()
+
+                println("size is ${allCoinsState.coins.size}")
+
                 LazyColumn {
                     items(sortedCoinNames) {
-                        Text(it)
+                        // IndividualShortCoinItem()
+                        Text(it, modifier = Modifier.clickable {
+                            val clickedCoin = allCoinsState.coins.find { coin -> coin.name == it }
+                            selectedCoinId = clickedCoin?.id
+                            println("clicked coinId is: $selectedCoinId")
+                        })
                         HorizontalDivider(
                             modifier = Modifier.padding(),
                             color = Color.Gray,

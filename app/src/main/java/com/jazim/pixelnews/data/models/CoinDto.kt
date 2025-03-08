@@ -2,7 +2,7 @@ package com.jazim.pixelnews.data.models
 
 import com.google.gson.annotations.SerializedName
 
-data class Coin(
+data class CoinDto(
     @SerializedName("id")
     val id: String,
     @SerializedName("name")
@@ -20,9 +20,9 @@ data class Coin(
     @SerializedName("logo")
     val logo: String,
     @SerializedName("tags")
-    val tags: List<Tag>,
+    val tags: List<TagDto>,
     @SerializedName("team")
-    val team: List<Team>,
+    val team: List<TeamDto>,
     @SerializedName("description")
     val description: String,
     @SerializedName("message")
@@ -42,11 +42,11 @@ data class Coin(
     @SerializedName("hash_algorithm")
     val hashAlgorithm: String,
     @SerializedName("links")
-    val links: Links,
+    val links: LinksDto,
     @SerializedName("links_extended")
-    val linksExtended: List<LinkExtended>,
+    val linksExtended: List<LinkExtendedDto>,
     @SerializedName("whitepaper")
-    val whitepaper: Whitepaper,
+    val whitepaper: WhitepaperDto,
     @SerializedName("first_data_at")
     val firstDataAt: String,
     @SerializedName("last_data_at")

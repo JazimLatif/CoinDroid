@@ -2,7 +2,7 @@ package com.jazim.pixelnews.data.models
 
 import com.google.gson.annotations.SerializedName
 
-data class Team(
+data class TeamDto(
     @SerializedName("id")
     val id: String,
     @SerializedName("name")

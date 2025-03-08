@@ -2,7 +2,7 @@ package com.jazim.pixelnews.data.models
 
 import com.google.gson.annotations.SerializedName
 
-data class Links(
+data class LinksDto(
     @SerializedName("explorer")
     val explorer: List<String>,
     @SerializedName("facebook")

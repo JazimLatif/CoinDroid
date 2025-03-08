@@ -2,7 +2,7 @@ package com.jazim.pixelnews.data.models
 
 import com.google.gson.annotations.SerializedName
 
-data class Tag(
+data class TagDto(
     @SerializedName("id")
     val id: String,
     @SerializedName("name")
@@ -11,5 +11,4 @@ data class Tag(
     val coinCounter: Int,
     @SerializedName("ico_counter")
     val icoCounter: Int,
-
 )

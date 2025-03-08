@@ -2,7 +2,7 @@ package com.jazim.pixelnews.data.models
 
 import com.google.gson.annotations.SerializedName
 
-data class ShortCoin(
+data class ShortCoinDto(
     @SerializedName("id")
     val id: String,
     @SerializedName("name")

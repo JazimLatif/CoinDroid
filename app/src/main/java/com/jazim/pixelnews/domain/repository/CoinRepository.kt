@@ -1,6 +1,6 @@
 package com.jazim.pixelnews.domain.repository
 
-import com.jazim.pixelnews.data.models.Coin
+import com.jazim.pixelnews.domain.model.Coin
 import com.jazim.pixelnews.domain.model.ShortCoin
 
 interface CoinRepository {
