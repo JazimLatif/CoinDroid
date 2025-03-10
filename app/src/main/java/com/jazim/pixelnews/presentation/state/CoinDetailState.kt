@@ -1,6 +1,6 @@
 package com.jazim.pixelnews.presentation.state
 
-data class OneCoinState(
+data class CoinDetailState(
     val loading: Boolean = true,
     val error: String? = null,
     val name: String? = null,
