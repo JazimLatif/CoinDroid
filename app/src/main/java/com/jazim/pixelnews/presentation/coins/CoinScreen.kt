@@ -1,7 +1,6 @@
 package com.jazim.pixelnews.presentation.coins
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -22,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,20 +56,19 @@ fun CoinsScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val isRefreshing = allCoinsState.loading
-
     Text("Coins Count : ${allCoinsState.coins.size}", fontSize = 20.sp)
 
     Box(
         Modifier
             .fillMaxSize()
             .padding(16.dp)
+
             .padding(top = 30.dp),
         contentAlignment = Alignment.Center
     ) {
         when {
 
-            allCoinsState.loading || isRefreshing -> CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
+            allCoinsState.loading -> CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
 
             allCoinsState.error != null -> {
                 Text(modifier = Modifier.width(300.dp), text = allCoinsState.error.toString())
@@ -80,11 +76,10 @@ fun CoinsScreen(
 
             else -> {
                 val sortedCoinNames = coinViewModel.getNamesAlphabetically()
-
                 PullToRefreshBox(
-                    isRefreshing = isRefreshing,
+                    isRefreshing = false,
                     onRefresh = {
-                        coinViewModel.getAllCoins()  // No need to manually set isRefreshing
+                        coinViewModel.getAllCoins()
                     }
                 ) {
                     LazyColumn {

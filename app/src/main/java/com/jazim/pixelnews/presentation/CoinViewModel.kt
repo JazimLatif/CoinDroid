@@ -1,5 +1,6 @@
 package com.jazim.pixelnews.presentation
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -29,8 +30,10 @@ class CoinViewModel @Inject constructor(
     init {
         getAllCoins()
     }
-
     fun getAllCoins() {
+        Log.d("API_CALL", "getAllCoins called at ${System.currentTimeMillis()}")  // Already added
+
+
         // I initially thought this line wasn't needed because loading is true by default in AllCoinsState()
         // but when called again on pull down to refresh, it wasn't working until this line was added since loading was false after initial load
         _allCoinsState.value = _allCoinsState.value.copy(loading = true)
