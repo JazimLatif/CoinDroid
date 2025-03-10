@@ -1,9 +1,12 @@
 package com.jazim.pixelnews.presentation.coins
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -18,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,9 +49,9 @@ import kotlinx.coroutines.launch
 fun CoinsScreen(
     coinViewModel: CoinViewModel
 ) {
+    val coroutineScope = rememberCoroutineScope()
 
     val allCoinsState = coinViewModel.allCoinsState.value
-
     val coinDetailState = coinViewModel.coinDetailState.value
 
     val bottomSheetState = rememberModalBottomSheetState()
@@ -54,7 +59,6 @@ fun CoinsScreen(
     var selectedCoinId by remember { mutableStateOf<String?>(null) }
     var selectedCoinName by remember { mutableStateOf<String?>(null) }
 
-    val coroutineScope = rememberCoroutineScope()
 
     Text("Coins Count : ${allCoinsState.coins.size}", fontSize = 20.sp)
 
@@ -66,29 +70,39 @@ fun CoinsScreen(
             .padding(top = 30.dp),
         contentAlignment = Alignment.Center
     ) {
-        when {
-
-            allCoinsState.loading -> CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
+        PullToRefreshBox(
+            isRefreshing = false,
+            onRefresh = {
+                coinViewModel.getAllCoins()
+            },
+        ) {
+            when {
+            allCoinsState.loading -> {
+                CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
+            }
 
             allCoinsState.error != null -> {
-                Text(modifier = Modifier.width(300.dp), text = allCoinsState.error.toString())
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(modifier = Modifier.width(300.dp), text = allCoinsState.error.toString())
+                    Button( { coinViewModel.getAllCoins() } ) {
+                        Text("Retry")
+                    }
+                }
             }
 
             else -> {
-                val sortedCoinNames = coinViewModel.getNamesAlphabetically()
-                PullToRefreshBox(
-                    isRefreshing = false,
-                    onRefresh = {
-                        coinViewModel.getAllCoins()
-                    }
-                ) {
+                val sortedCoinNames = coinViewModel.getCoinsAlphabetically()
                     LazyColumn {
                         items(allCoinsState.coins) { coin ->
                             CoinListItemView(
                                 modifier = Modifier,
-                                id = coin.id,
+                                symbol = coin.symbol,
                                 name = coin.name,
                                 onClick = {
+                                    selectedCoinId = null
                                     val clickedCoin =
                                         allCoinsState.coins.find { it.id == coin.id }
                                     selectedCoinId = clickedCoin?.id
@@ -100,7 +114,6 @@ fun CoinsScreen(
                         }
                     }
                 }
-
             }
         }
     }
@@ -112,12 +125,22 @@ fun CoinsScreen(
         ) {
             when {
                 coinDetailState.loading -> {
-                    Box(
-                        Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+                    Column(Modifier.padding(16.dp)) {
+                        CircularProgressIndicator(modifier = Modifier.size(128.dp))
+                        // We have the name already from the list of coins, while the API fetches logo and description
+                        // might as well show the name instantly so the user knows what they're waiting for.
+                        selectedCoinName?.let { coinName ->
+                            Text(
+                                text = coinName,
+                                style = MaterialTheme.typography.headlineMedium
+                            )
+                        }
+                        Row(modifier = Modifier.defaultMinSize(minHeight = 100.dp)) {
+                            Text(text = "Description: ",  style = MaterialTheme.typography.labelLarge)
+                            CircularProgressIndicator()
+                        }
                     }
+
                 }
 
                 coinDetailState.error != null -> {
@@ -136,8 +159,6 @@ fun CoinsScreen(
                             AsyncImage(model =  coinDetailState.logo, "coin logo for $selectedCoinName", modifier = Modifier.size(128.dp))
                         }
 
-                        // We have the name already from the list of coins, while the API fetches logo and description
-                        // might as well show the name instantly so the user knows what they're waiting for.
                         selectedCoinName?.let { coinName ->
                             Text(
                                 text = coinName,
@@ -146,7 +167,7 @@ fun CoinsScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Text(text = "Description: ${coinDetailState.description.takeIf { !it.isNullOrEmpty() } ?: "No description found"}", style = MaterialTheme.typography.labelLarge, modifier = Modifier.height(100.dp))
+                        Text(text = "Description: ${coinDetailState.description.takeIf { !it.isNullOrEmpty() } ?: "No description found"}", style = MaterialTheme.typography.labelLarge, modifier = Modifier.defaultMinSize(minHeight = 100.dp))
 
                     }
                 }

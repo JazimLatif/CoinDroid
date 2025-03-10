@@ -5,7 +5,7 @@ import com.jazim.pixelnews.domain.model.ShortCoin
 
 fun List<com.jazim.pixelnews.data.models.ShortCoinDto>.toDomainModel(): List<ShortCoin> {
     return this.map { shortCoin ->
-        ShortCoin(id = shortCoin.id, name = shortCoin.name)
+        ShortCoin(id = shortCoin.id, name = shortCoin.name, symbol = shortCoin.symbol)
     }
 }
 

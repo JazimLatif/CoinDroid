@@ -5,6 +5,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jazim.pixelnews.domain.model.Coin
 import com.jazim.pixelnews.domain.repository.CoinRepository
 import com.jazim.pixelnews.presentation.state.AllCoinsState
 import com.jazim.pixelnews.presentation.state.CoinDetailState
@@ -33,10 +34,9 @@ class CoinViewModel @Inject constructor(
     fun getAllCoins() {
         Log.d("API_CALL", "getAllCoins called at ${System.currentTimeMillis()}")  // Already added
 
-
         // I initially thought this line wasn't needed because loading is true by default in AllCoinsState()
         // but when called again on pull down to refresh, it wasn't working until this line was added since loading was false after initial load
-        _allCoinsState.value = _allCoinsState.value.copy(loading = true)
+        _allCoinsState.value = AllCoinsState(loading = true, error = null)
 
 
         viewModelScope.launch {
@@ -46,11 +46,12 @@ class CoinViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { coinsInfo ->
-                    _allCoinsState.value = _allCoinsState.value.copy(
+                    _allCoinsState.value = AllCoinsState(
                         loading = false,
                         coins = coinsInfo.map { coin ->
                             ShortCoinState(
                                 id = coin.id,
+                                symbol = coin.symbol,
                                 name = coin.name
                             )
                         }
@@ -66,6 +67,8 @@ class CoinViewModel @Inject constructor(
     }
 
     fun getCoin(id: String) {
+
+        _coinDetailState.value = CoinDetailState(loading = true, error = null)
         viewModelScope.launch {
 
             val result = withContext(Dispatchers.IO) {
@@ -74,7 +77,7 @@ class CoinViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { coinInfo ->
-                    _coinDetailState.value = _coinDetailState.value.copy(
+                    _coinDetailState.value = CoinDetailState(
                         loading = false,
                         name = coinInfo.name,
                         logo = coinInfo.logo,
@@ -91,13 +94,21 @@ class CoinViewModel @Inject constructor(
         }
     }
 
-    // If there were a lot of these "helper" functions they could be moved into a class and injected
+    // If there were a lot of these "helper" functions they could be moved into a class and injected, since there aren't many I chose to leave them here
 
-    fun getNamesAlphabetically(): List<String>{
-        return _allCoinsState.value.coins.map { it.name }.sorted()
+    fun getCoinsAlphabetically(): List<ShortCoinState>{
+        return _allCoinsState.value.coins.map { coin ->
+            ShortCoinState(
+                id = coin.id,
+                name = coin.name,
+                symbol = coin.symbol
+            )
+        }.sortedBy { it.name }
 
     }
 
-
+    fun clearCoinDetailState() {
+        _coinDetailState.value = CoinDetailState()
+    }
 
 }
