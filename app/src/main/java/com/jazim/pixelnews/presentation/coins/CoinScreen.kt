@@ -3,6 +3,7 @@ package com.jazim.pixelnews.presentation.coins
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,9 +24,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +46,8 @@ import coil3.compose.AsyncImage
 import com.jazim.pixelnews.R
 import com.jazim.pixelnews.presentation.CoinViewModel
 import com.jazim.pixelnews.presentation.components.CoinListItemView
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -58,10 +63,13 @@ fun CoinsScreen(
 
     val bottomSheetState = rememberModalBottomSheetState()
 
+
     var selectedCoinId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedCoinName by rememberSaveable { mutableStateOf<String?>(null) }
 
     val listState = rememberLazyListState()
+
+    var isRefreshing by remember { mutableStateOf(false) }
 
     Box(
         Modifier
@@ -70,15 +78,29 @@ fun CoinsScreen(
         contentAlignment = Alignment.Center
     ) {
         PullToRefreshBox(
-            isRefreshing = false,
-            onRefresh = { coinViewModel.getAllCoins() }
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                coinViewModel.getAllCoins()
+            }
         ) {
+
+            LaunchedEffect(allCoinsState.loading) {
+                if (!allCoinsState.loading) {
+                    isRefreshing = false
+                }
+            }
+
             when {
-                allCoinsState.loading -> {
+                // This was done because I wanted the CircularProgressIndicator when the app first loads,
+                // but on refreshes I wanted to only see the PullDownToRefreshIndicator, and I was seeing both overlapped which wasn't nice
+                allCoinsState.loading && !isRefreshing -> {
                     CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
                 }
 
                 allCoinsState.error != null -> {
+                    isRefreshing = false
+
                     Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
