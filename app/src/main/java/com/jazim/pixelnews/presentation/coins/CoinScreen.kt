@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,61 +58,63 @@ fun CoinsScreen(
 
     val bottomSheetState = rememberModalBottomSheetState()
 
-    var selectedCoinId by remember { mutableStateOf<String?>(null) }
-    var selectedCoinName by remember { mutableStateOf<String?>(null) }
+    var selectedCoinId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedCoinName by rememberSaveable { mutableStateOf<String?>(null) }
 
-
-    Text("Coins Count : ${allCoinsState.coins.size}", fontSize = 20.sp)
+    val listState = rememberLazyListState()
 
     Box(
         Modifier
             .fillMaxSize()
-            .padding(16.dp)
-
-            .padding(top = 30.dp),
+            .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         PullToRefreshBox(
             isRefreshing = false,
-            onRefresh = {
-                coinViewModel.getAllCoins()
-            },
+            onRefresh = { coinViewModel.getAllCoins() }
         ) {
             when {
-            allCoinsState.loading -> {
-                CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
-            }
+                allCoinsState.loading -> {
+                    CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
+                }
 
-            allCoinsState.error != null -> {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(modifier = Modifier.width(300.dp), text = allCoinsState.error.toString())
-                    Button( { coinViewModel.getAllCoins() } ) {
-                        Text("Retry")
+                allCoinsState.error != null -> {
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(modifier = Modifier.width(300.dp), text = allCoinsState.error.toString())
+                        Button( { coinViewModel.getAllCoins() } ) {
+                            Text("Retry")
+                        }
                     }
                 }
-            }
 
-            else -> {
-                val sortedCoinNames = coinViewModel.getCoinsAlphabetically()
-                    LazyColumn {
-                        items(allCoinsState.coins) { coin ->
-                            CoinListItemView(
-                                modifier = Modifier,
-                                symbol = coin.symbol,
-                                name = coin.name,
-                                onClick = {
-                                    selectedCoinId = null
-                                    val clickedCoin =
-                                        allCoinsState.coins.find { it.id == coin.id }
-                                    selectedCoinId = clickedCoin?.id
-                                    selectedCoinName = clickedCoin?.name
-                                    selectedCoinId?.let { id -> coinViewModel.getCoin(id) }
-                                    coroutineScope.launch { bottomSheetState.show() }
-                                }
-                            )
+                else -> {
+                    val sortedCoins = coinViewModel.getCoinsAlphabetically()
+                    Box(Modifier.fillMaxSize()) {
+                        LazyColumn(state = listState) {
+                            items(allCoinsState.coins) { coin ->
+                                CoinListItemView(
+                                    modifier = Modifier,
+                                    symbol = coin.symbol,
+                                    name = coin.name,
+                                    onClick = {
+                                        selectedCoinId = null
+                                        val clickedCoin =
+                                            allCoinsState.coins.find { it.id == coin.id }
+                                        selectedCoinId = clickedCoin?.id
+                                        selectedCoinName = clickedCoin?.name
+                                        selectedCoinId?.let { id -> coinViewModel.getCoin(id) }
+                                        coroutineScope.launch { bottomSheetState.show() }
+                                    }
+                                )
+                            }
+                        }
+                        Button(modifier = Modifier.align(Alignment.BottomCenter),
+                            onClick = { coroutineScope.launch { listState.animateScrollToItem(0) } }
+                        ) {
+                            Text("Scroll to top")
                         }
                     }
                 }

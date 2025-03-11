@@ -5,7 +5,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jazim.pixelnews.domain.model.Coin
 import com.jazim.pixelnews.domain.repository.CoinRepository
 import com.jazim.pixelnews.presentation.state.AllCoinsState
 import com.jazim.pixelnews.presentation.state.CoinDetailState
@@ -104,11 +103,5 @@ class CoinViewModel @Inject constructor(
                 symbol = coin.symbol
             )
         }.sortedBy { it.name }
-
     }
-
-    fun clearCoinDetailState() {
-        _coinDetailState.value = CoinDetailState()
-    }
-
 }
