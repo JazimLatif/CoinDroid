@@ -22,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -29,6 +30,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +48,7 @@ import coil3.compose.AsyncImage
 import com.jazim.pixelnews.R
 import com.jazim.pixelnews.presentation.CoinViewModel
 import com.jazim.pixelnews.presentation.components.CoinListItemView
+import com.jazim.pixelnews.presentation.state.CoinDetailState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -62,7 +65,6 @@ fun CoinsScreen(
     val coinDetailState = coinViewModel.coinDetailState.value
 
     val bottomSheetState = rememberModalBottomSheetState()
-
 
     var selectedCoinId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedCoinName by rememberSaveable { mutableStateOf<String?>(null) }
@@ -84,7 +86,6 @@ fun CoinsScreen(
                 coinViewModel.getAllCoins()
             }
         ) {
-
             LaunchedEffect(allCoinsState.loading) {
                 if (!allCoinsState.loading) {
                     isRefreshing = false
@@ -133,10 +134,17 @@ fun CoinsScreen(
                                 )
                             }
                         }
-                        Button(modifier = Modifier.align(Alignment.BottomCenter),
-                            onClick = { coroutineScope.launch { listState.animateScrollToItem(0) } }
-                        ) {
-                            Text("Scroll to top")
+                        // if it's less than 20 then scrolling up won't take long enough to bother showing the button
+                        if (sortedCoins.size>20) {
+                            Button(modifier = Modifier.align(Alignment.BottomCenter),
+                                onClick = {
+                                    coroutineScope.launch {
+                                        listState.animateScrollToItem(0)
+                                    }
+                                }
+                            ) {
+                                Text("Scroll to top")
+                            }
                         }
                     }
                 }
@@ -145,60 +153,12 @@ fun CoinsScreen(
     }
 
     if (selectedCoinId != null) {
-        ModalBottomSheet(
-            onDismissRequest = { selectedCoinId = null },
-            sheetState = bottomSheetState
-        ) {
-            when {
-                coinDetailState.loading -> {
-                    Column(Modifier.padding(16.dp)) {
-                        CircularProgressIndicator(modifier = Modifier.size(128.dp))
-                        // We have the name already from the list of coins, while the API fetches logo and description
-                        // might as well show the name instantly so the user knows what they're waiting for.
-                        selectedCoinName?.let { coinName ->
-                            Text(
-                                text = coinName,
-                                style = MaterialTheme.typography.headlineMedium
-                            )
-                        }
-                        Row(modifier = Modifier.defaultMinSize(minHeight = 100.dp)) {
-                            Text(text = "Description: ",  style = MaterialTheme.typography.labelLarge)
-                            CircularProgressIndicator()
-                        }
-                    }
-
-                }
-
-                coinDetailState.error != null -> {
-                    Text(
-                        text = "Error: ${coinDetailState.error}",
-                        modifier = Modifier.padding(16.dp),
-                        color = Color.Red
-                    )
-                }
-
-                else -> {
-                    Column(Modifier.padding(16.dp)) {
-                        if (coinDetailState.logo.isNullOrEmpty()) {
-                            Icon(painterResource(R.drawable.baseline_image_not_supported_24), "image not found", modifier = Modifier.size(128.dp))
-                        } else {
-                            AsyncImage(model =  coinDetailState.logo, "coin logo for $selectedCoinName", modifier = Modifier.size(128.dp))
-                        }
-
-                        selectedCoinName?.let { coinName ->
-                            Text(
-                                text = coinName,
-                                style = MaterialTheme.typography.headlineMedium
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(text = "Description: ${coinDetailState.description.takeIf { !it.isNullOrEmpty() } ?: "No description found"}", style = MaterialTheme.typography.labelLarge, modifier = Modifier.defaultMinSize(minHeight = 100.dp))
-
-                    }
-                }
-            }
-        }
+        BottomSheet(
+            onDismissed = { selectedCoinId = null },
+            selectedCoinName = selectedCoinName,
+            coinDetailState = coinDetailState,
+            bottomSheetState = bottomSheetState,
+        )
     }
 }
 
