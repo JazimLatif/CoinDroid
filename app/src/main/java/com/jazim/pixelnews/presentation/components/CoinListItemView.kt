@@ -49,5 +49,5 @@ fun CoinListItemView(
             )
         }
     }
-//    HorizontalDivider(modifier = modifier.padding(vertical = 8.dp))
+    HorizontalDivider(modifier = modifier.padding(vertical = 8.dp))
 }

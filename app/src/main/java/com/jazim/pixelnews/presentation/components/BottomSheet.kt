@@ -1,4 +1,4 @@
-package com.jazim.pixelnews.presentation.coins
+package com.jazim.pixelnews.presentation.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.jazim.pixelnews.R
@@ -27,6 +28,7 @@ import com.jazim.pixelnews.presentation.state.CoinDetailState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheet(
+    modifier: Modifier,
     onDismissed: () -> Unit,
     selectedCoinName: String?,
     coinDetailState: CoinDetailState,
@@ -49,7 +51,7 @@ fun BottomSheet(
                         )
                     }
                     Row(modifier = Modifier.defaultMinSize(minHeight = 100.dp)) {
-                        Text(text = "Description: ",  style = MaterialTheme.typography.labelLarge)
+                        Text(text = stringResource(R.string.description),  style = MaterialTheme.typography.labelLarge)
                         CircularProgressIndicator()
                     }
                 }
@@ -57,7 +59,7 @@ fun BottomSheet(
 
             coinDetailState.error != null -> {
                 Text(
-                    text = "Error: ${coinDetailState.error}",
+                    text = stringResource(R.string.error, coinDetailState.error),
                     modifier = Modifier.padding(16.dp),
                     color = Color.Red
                 )
@@ -66,7 +68,10 @@ fun BottomSheet(
             else -> {
                 Column(Modifier.padding(16.dp)) {
                     if (coinDetailState.logo.isNullOrEmpty()) {
-                        Icon(painterResource(R.drawable.baseline_image_not_supported_24), "image not found", modifier = Modifier.size(128.dp))
+                        Icon(painterResource(R.drawable.baseline_image_not_supported_24),
+                            stringResource(
+                                R.string.image_not_found
+                            ), modifier = Modifier.size(128.dp))
                     } else {
                         AsyncImage(model =  coinDetailState.logo, "coin logo for $selectedCoinName", modifier = Modifier.size(128.dp))
                     }
@@ -79,7 +84,10 @@ fun BottomSheet(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(text = "Description: ${coinDetailState.description.takeIf { !it.isNullOrEmpty() } ?: "No description found"}", style = MaterialTheme.typography.labelLarge, modifier = Modifier.defaultMinSize(minHeight = 100.dp))
+                    Text(text = stringResource(
+                        R.string.description_detail,
+                        coinDetailState.description.takeIf { !it.isNullOrEmpty() }
+                            ?: "No description found"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.defaultMinSize(minHeight = 100.dp))
 
                 }
             }

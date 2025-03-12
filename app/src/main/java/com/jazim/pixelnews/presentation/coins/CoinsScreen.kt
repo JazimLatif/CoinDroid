@@ -33,8 +33,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.jazim.pixelnews.presentation.CoinViewModel
+import com.jazim.pixelnews.R
+import com.jazim.pixelnews.presentation.components.BottomSheet
 import com.jazim.pixelnews.presentation.components.CoinListItemView
 import kotlinx.coroutines.launch
 
@@ -56,12 +58,13 @@ fun CoinsScreen(
 
     val listState = rememberLazyListState()
 
-    var isRefreshing by remember { mutableStateOf(false) }
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
 
     Box(
         Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .testTag("MainScreen"),
         contentAlignment = Alignment.Center
     ) {
         PullToRefreshBox(
@@ -92,8 +95,10 @@ fun CoinsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(modifier = Modifier.width(300.dp), text = allCoinsState.error.toString())
+
+
                         Button( { coinViewModel.getAllCoins() } ) {
-                            Text("Retry")
+                            Text(stringResource(R.string.retry))
                         }
                     }
                 }
@@ -102,7 +107,7 @@ fun CoinsScreen(
                     val sortedCoins = coinViewModel.getCoinsAlphabetically()
                     Box(Modifier.fillMaxSize()) {
                         LazyColumn(state = listState) {
-                            items(allCoinsState.coins) { coin ->
+                            items(sortedCoins) { coin ->
                                 CoinListItemView(
                                     modifier = Modifier,
                                     symbol = coin.symbol,
@@ -136,7 +141,7 @@ fun CoinsScreen(
                                     }
                                 }
                             ) {
-                                Text("Scroll to top")
+                                Text(stringResource(R.string.scroll_to_top))
                             }
                         }
                     }
@@ -147,6 +152,7 @@ fun CoinsScreen(
 
     if (selectedCoinId != null) {
         BottomSheet(
+            modifier = Modifier.testTag("BottomSheet"),
             onDismissed = { selectedCoinId = null },
             selectedCoinName = selectedCoinName,
             coinDetailState = coinDetailState,

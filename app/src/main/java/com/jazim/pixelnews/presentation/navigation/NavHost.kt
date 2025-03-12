@@ -5,7 +5,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import com.jazim.pixelnews.presentation.CoinViewModel
+import com.jazim.pixelnews.presentation.coins.CoinViewModel
 import com.jazim.pixelnews.presentation.coins.CoinsScreen
 
 @Composable

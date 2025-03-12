@@ -48,6 +48,9 @@ android {
     buildFeatures {
         compose = true
     }
+    tasks.withType<Test> {
+        jvmArgs = listOf("-XX:+EnableDynamicAgentLoading")
+    }
 }
 
 dependencies {

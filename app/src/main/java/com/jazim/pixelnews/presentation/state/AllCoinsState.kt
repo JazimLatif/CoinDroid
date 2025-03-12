@@ -5,9 +5,3 @@ data class AllCoinsState(
     val error: String? = null,
     val coins: List<ShortCoinState> = emptyList()
 )
-
-data class ShortCoinState(
-    val id: String,
-    val name: String,
-    val symbol: String
-)

@@ -1,6 +1,5 @@
-package com.jazim.pixelnews.presentation
+package com.jazim.pixelnews.presentation.coins
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -30,8 +29,14 @@ class CoinViewModel @Inject constructor(
     init {
         getAllCoins()
     }
+
     fun getAllCoins() {
-        Log.d("API_CALL", "getAllCoins called at ${System.currentTimeMillis()}")  // Already added
+        // Started logging this because I was worried I hit the rate limit of the API since I was
+        // refreshing using the pullToRefresh and started getting 402 errors which made me think I
+        // had called the api more than the free limit (20,000 per month) due to an infinite loop
+        // turns out this happens if you call it more than once per second for a while also
+        // (which I learned after contacting coinpaprika support)
+        println("getAllCoins called at ${System.currentTimeMillis()}")
 
         // I initially thought this line wasn't needed because loading is true by default in AllCoinsState()
         // but when called again on pull down to refresh, it wasn't working until this line was added since loading was false after initial load
@@ -66,7 +71,6 @@ class CoinViewModel @Inject constructor(
     }
 
     fun getCoin(id: String) {
-
         _coinDetailState.value = CoinDetailState(loading = true, error = null)
         viewModelScope.launch {
 
