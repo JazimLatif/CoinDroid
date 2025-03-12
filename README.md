@@ -25,6 +25,8 @@ whereas some of the coins at the top of the alphabetised list don't
 - I think perhaps the BottomSheet component would be more testable if it took more parameters to hoist state better (like passing the list of coins to the composable)
 - The sorting by name alphabetically is working, however some coin names start with a space (eg: " Bakkt Holdings, Inc."). I didn't want to alter the data and logic of kotlin's sorting function,
 although the brief said sorted alphabetically by name, I wasn't sure what to do here so I left it as-is.
+- In a real production environment, I would have done new features on branches using Pull requests to merge them, for the purpose of this task I didn't (and I didn't squash commits etc.)
+
 ---
 
 ## Thanks again!
