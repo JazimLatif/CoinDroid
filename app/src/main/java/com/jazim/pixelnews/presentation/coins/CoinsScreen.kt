@@ -132,9 +132,6 @@ fun CoinsScreen(
                         Box(Modifier.fillMaxSize()) {
                             LazyColumn(state = listState) {
                                 items(coins) { coin ->
-                                    Log.d("helloJazim", sortedCoins[73090].name)
-                                    Log.d("helloJazim", sortedCoins[0].name)
-
                                     CoinListItemView(
                                         modifier = Modifier,
                                         symbol = coin.symbol,
