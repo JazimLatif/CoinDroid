@@ -42,7 +42,7 @@ class CoinViewModel @Inject constructor(
         if (query.isEmpty()) {
             getCoinsAlphabetically()
         } else {
-            allCoinsState.value.coins.filter { it.name.contains(query) }
+            allCoinsState.value.coins.filter { it.name.startsWith(query) }
         }
     }
 
