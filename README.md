@@ -19,7 +19,6 @@ I attempted to animate the list by using a scroll to top button, which smoothly 
 ### Improvements:
 
 - I would like to get my ViewModel Tests working, currently they fail due to an error which I spent a long time trying to debug
-- For this reason, the test (even the alphabetisation test)
 - A filter/ search seems appropriate, the best coins to test with were the higher ranked ones (most of these had an image and description associated with them)
 whereas some of the coins at the top of the alphabetised list don't
 - I think perhaps the BottomSheet component would be more testable if it took more parameters to hoist state better (like passing the list of coins to the composable)
