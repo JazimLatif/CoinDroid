@@ -25,15 +25,6 @@ This project helped me solidify my understanding of clean architecture, SOLID pr
 
 ---
 
-## Areas for Future Improvement
-
-- ViewModel testing currently has issues – still working on resolving test failures.
-- Improving testability of the **BottomSheet** by refactoring it to hoist state and accept coin data as parameters.
-- Handling edge cases in sorting (e.g., coin names starting with spaces) with a preprocessing step, if needed.
-- Using feature branches and PRs for a more production-like workflow.
-
----
-
 ## Thanks
 
 Thanks for checking out **CoinDroid** – a personal playground for exploring Android dev techniques and staying sharp with Compose and Kotlin!

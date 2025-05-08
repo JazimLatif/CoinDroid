@@ -1,9 +1,13 @@
 package com.jazim.pixelnews.presentation.coins
 
+import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jazim.pixelnews.domain.model.Coin
 import com.jazim.pixelnews.domain.repository.CoinRepository
 import com.jazim.pixelnews.presentation.state.AllCoinsState
 import com.jazim.pixelnews.presentation.state.CoinDetailState
@@ -20,6 +24,9 @@ class CoinViewModel @Inject constructor(
     private val coinRepository: CoinRepository
 ): ViewModel() {
 
+    private val _searchQuery = mutableStateOf("")
+    val searchQuery: MutableState<String> = _searchQuery
+
     private val _allCoinsState = mutableStateOf(AllCoinsState())
     val allCoinsState: State<AllCoinsState> = _allCoinsState
 
@@ -28,6 +35,19 @@ class CoinViewModel @Inject constructor(
 
     init {
         getAllCoins()
+    }
+
+    val filteredCoins: State<List<ShortCoinState>> = derivedStateOf {
+        val query = searchQuery.value
+        if (query.isEmpty()) {
+            getCoinsAlphabetically()
+        } else {
+            allCoinsState.value.coins.filter { it.name.startsWith(query) }
+        }
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     fun getAllCoins() {

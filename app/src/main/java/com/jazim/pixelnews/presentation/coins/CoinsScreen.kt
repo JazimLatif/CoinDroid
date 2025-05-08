@@ -1,6 +1,7 @@
 package com.jazim.pixelnews.presentation.coins
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,15 +11,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -60,88 +66,107 @@ fun CoinsScreen(
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .testTag("MainScreen"),
-        contentAlignment = Alignment.Center
+    val coins by coinViewModel.filteredCoins
+    val searchQuery by coinViewModel.searchQuery
+
+
+    Column(
+        verticalArrangement = Arrangement.Top
     ) {
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = {
-                isRefreshing = true
-                coinViewModel.getAllCoins()
-            }
+        TextField(
+            value = searchQuery,
+            onValueChange = { coinViewModel.updateSearchQuery(it) },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Search coins...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") },
+            singleLine = true
+        )
+
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .testTag("MainScreen"),
+            contentAlignment = Alignment.Center
         ) {
-            LaunchedEffect(allCoinsState.loading) {
-                if (!allCoinsState.loading) {
-                    isRefreshing = false
+
+
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    isRefreshing = true
+                    coinViewModel.getAllCoins()
                 }
-            }
-
-            when {
-                // This was done because I wanted the CircularProgressIndicator when the app first loads,
-                // but on refreshes I wanted to only see the PullDownToRefreshIndicator, and I was seeing both overlapped which wasn't nice
-                allCoinsState.loading && !isRefreshing -> {
-                    CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
-                }
-
-                allCoinsState.error != null -> {
-                    isRefreshing = false
-
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text(modifier = Modifier.width(300.dp), text = allCoinsState.error.toString())
-
-
-                        Button( { coinViewModel.getAllCoins() } ) {
-                            Text(stringResource(R.string.retry))
-                        }
+            ) {
+                LaunchedEffect(allCoinsState.loading) {
+                    if (!allCoinsState.loading) {
+                        isRefreshing = false
                     }
                 }
 
-                else -> {
-                    val sortedCoins = coinViewModel.getCoinsAlphabetically()
-                    Box(Modifier.fillMaxSize()) {
-                        LazyColumn(state = listState) {
-                            items(sortedCoins) { coin ->
-                                CoinListItemView(
-                                    modifier = Modifier,
-                                    symbol = coin.symbol,
-                                    name = coin.name,
-                                    onClick = {
-                                        selectedCoinId = null
-                                        val clickedCoin =
-                                            allCoinsState.coins.find { it.id == coin.id }
-                                        selectedCoinId = clickedCoin?.id
-                                        selectedCoinName = clickedCoin?.name
-                                        selectedCoinId?.let { id -> coinViewModel.getCoin(id) }
-                                        coroutineScope.launch { bottomSheetState.show() }
-                                    }
-                                )
+                when {
+                    // This was done because I wanted the CircularProgressIndicator when the app first loads,
+                    // but on refreshes I wanted to only see the PullDownToRefreshIndicator, and I was seeing both overlapped which wasn't nice
+                    allCoinsState.loading && !isRefreshing -> {
+                        CircularProgressIndicator(Modifier.testTag("LoadingIndicator"))
+                    }
+
+                    allCoinsState.error != null -> {
+                        isRefreshing = false
+
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(modifier = Modifier.width(300.dp), text = allCoinsState.error.toString())
+
+
+                            Button( { coinViewModel.getAllCoins() } ) {
+                                Text(stringResource(R.string.retry))
                             }
                         }
-                        val showButton by remember { derivedStateOf { listState.firstVisibleItemIndex > 10} }
+                    }
 
-                        AnimatedVisibility(
-                            visible = showButton,
-                            enter = slideInVertically() + fadeIn(),
-                            exit = slideOutVertically() + fadeOut(),
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(16.dp)
-                        ) {
-                            Button(
-                                onClick = {
-                                    coroutineScope.launch {
-                                        listState.animateScrollToItem(0)
-                                    }
+                    else -> {
+                        val sortedCoins = coinViewModel.getCoinsAlphabetically()
+                        Box(Modifier.fillMaxSize()) {
+                            LazyColumn(state = listState) {
+                                items(coins) { coin ->
+                                    CoinListItemView(
+                                        modifier = Modifier,
+                                        symbol = coin.symbol,
+                                        name = coin.name,
+                                        onClick = {
+                                            selectedCoinId = null
+                                            val clickedCoin =
+                                                allCoinsState.coins.find { it.id == coin.id }
+                                            selectedCoinId = clickedCoin?.id
+                                            selectedCoinName = clickedCoin?.name
+                                            selectedCoinId?.let { id -> coinViewModel.getCoin(id) }
+                                            coroutineScope.launch { bottomSheetState.show() }
+                                        }
+                                    )
                                 }
+                            }
+                            val showButton by remember { derivedStateOf { listState.firstVisibleItemIndex > 10} }
+
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = showButton,
+                                enter = slideInVertically() + fadeIn(),
+                                exit = slideOutVertically() + fadeOut(),
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .padding(16.dp)
                             ) {
-                                Text(stringResource(R.string.scroll_to_top))
+                                Button(
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            listState.animateScrollToItem(0)
+                                        }
+                                    }
+                                ) {
+                                    Text(stringResource(R.string.scroll_to_top))
+                                }
                             }
                         }
                     }
